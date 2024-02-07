@@ -37,4 +37,18 @@ public class Person {
 //
 //    private Person father;
 //    private Person mother;
+
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", middleName='" + middleName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", birthday=" + birthday +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", active=" + active +
+                '}';
+    }
 }
