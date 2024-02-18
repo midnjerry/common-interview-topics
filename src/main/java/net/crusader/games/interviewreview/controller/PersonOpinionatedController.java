@@ -5,23 +5,19 @@ import net.crusader.games.interviewreview.dto.GetPersonResponse;
 import net.crusader.games.interviewreview.dto.PersonDto;
 import net.crusader.games.interviewreview.exceptions.ResourceNotFoundException;
 import net.crusader.games.interviewreview.models.Person;
-import net.crusader.games.interviewreview.repository.PersonRepository;
 import net.crusader.games.interviewreview.service.PersonCrudService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("api/v1")
-public class PersonController {
-    private final PersonRepository personRepository;
+@RequestMapping("api/")
+public class PersonOpinionatedController {
     private final PersonCrudService personCrudService;
 
-    public PersonController(PersonRepository personRepository, PersonCrudService personCrudService) {
-        this.personRepository = personRepository;
+    public PersonOpinionatedController(PersonCrudService personCrudService) {
         this.personCrudService = personCrudService;
     }
 
@@ -56,8 +52,6 @@ public class PersonController {
         return personResponse;
     }
 
-    // Aspect Orient Programming
-
     /**
      * GET ALL RECORDS - typically will accept query parameters to filter resources
      *
@@ -67,7 +61,7 @@ public class PersonController {
      */
     @GetMapping("/person")
     public List<Person> getAll(@RequestParam(required = false, name = "firstName") String firstName, @RequestParam(required = false) String lastName) {
-        return this.personRepository.findActiveRecords();
+        return personCrudService.filterPeople(firstName, lastName);
     }
 
     /**
@@ -75,54 +69,19 @@ public class PersonController {
      */
     @PostMapping("/person")
     public Person createPerson(@RequestBody PersonDto body) {
-        return personRepository.save(new Person(null, body));
+        return personCrudService.createPerson(body);
     }
 
 
     @PutMapping("/person/{id}")
     public ResponseEntity<Person> replacePerson(@PathVariable("id") Long id, @RequestBody PersonDto body) {
-        Optional<Person> optional = personRepository.findById(id);
-        if (optional.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        Person person = personRepository.save(new Person(id, body));
-
-        return ResponseEntity.ok(person);
+        return ResponseEntity.ok(personCrudService.replacePerson(id, body));
     }
 
     @PatchMapping("/person/{id}")
     public ResponseEntity<Person> updatePersonByField(@PathVariable("id") Long id, @RequestBody PersonDto body) {
-        Optional<Person> optional = personRepository.findById(id);
-        if (optional.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        Person savedInDatabase = optional.get();
-
-        if (body.getFirstName() != null) {
-            savedInDatabase.setFirstName(body.getFirstName());
-        }
-
-        if (body.getLastName() != null) {
-            savedInDatabase.setLastName(body.getLastName());
-        }
-
-        if (body.getBirthday() != null) {
-            savedInDatabase.setBirthday(body.getBirthday());
-        }
-
-        if (body.getMiddleName() != null) {
-            savedInDatabase.setMiddleName(body.getMiddleName());
-        }
-
-        if (body.getPhoneNumber() != null) {
-            savedInDatabase.setPhoneNumber(body.getPhoneNumber());
-        }
-
-        Person result = personRepository.save(savedInDatabase);
-        return new ResponseEntity<>(result, HttpStatus.OK);
-
+        return ResponseEntity.ok(personCrudService.partialUpdatePerson(id, body));
     }
-
 
     /**
      * DELETE A RESOURCE
@@ -132,14 +91,10 @@ public class PersonController {
      */
     @DeleteMapping("/person/{id}")
     public void deletePerson(@PathVariable Long id) {
-        Optional<Person> personOptional = this.personRepository.findById(id);
-        if (personOptional.isPresent()) {
-            Person person = personOptional.get();
-            person.setActive(false);
-            this.personRepository.save(person);
-        }
-        // this.personRepository.deleteById(id);
+        personCrudService.deletePerson(id);
     }
 
 
 }
+
+
