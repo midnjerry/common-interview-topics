@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -181,5 +182,236 @@ public class StreamExampleTests {
 
         System.out.println(empList);
         System.out.println(actualList);
+    }
+
+    @Test
+    public void whenFindMin_thenGetMinElementFromStream() {
+        List<Employee> employeeList = new ArrayList<>(List.of(arrayOfEmps));
+        Employee firstEmp = employeeList.stream()
+                .min((e1, e2) -> e1.getSalary().compareTo(e2.getSalary()))
+                .orElseThrow(NoSuchElementException::new);
+
+        assertEquals(100000, firstEmp.getSalary());
+    }
+
+    @Test
+    public void whenApplyMatch_thenReturnBoolean() {
+        List<Integer> intList = Arrays.asList(2, 4, 5, 6, 8);
+
+        boolean allEven = intList.stream().allMatch(i -> i % 2 == 0);
+        boolean oneEven = intList.stream().anyMatch(i -> i % 2 == 0);
+        boolean noneMultipleOfThree = intList.stream().noneMatch(i -> i % 3 == 0);
+
+        assertEquals(allEven, false);
+        assertEquals(oneEven, true);
+        assertEquals(noneMultipleOfThree, false);
+    }
+
+    @Test
+    public void whenFindMaxOnIntStream_thenGetMaxInteger() {
+        List<Employee> employeeList = new ArrayList<>(List.of(arrayOfEmps));
+
+        Long latestEmpId = employeeList.stream()
+                .mapToLong(Employee::getId)
+                .max()
+                .orElseThrow(NoSuchElementException::new);
+
+        assertEquals(3, latestEmpId);
+
+
+    }
+
+    @Test
+    public void range_showExampleWithIntStream() {
+        Integer max = IntStream.range(10, 20).peek(e -> System.out.println("Number: " + e)).max().orElseThrow(NoSuchElementException::new);
+        assertEquals(19, max);
+    }
+
+    @Test
+    public void whenApplySumOnIntStream_thenGetSum() {
+        List<Employee> employeeList = new ArrayList<>(List.of(arrayOfEmps));
+        Double avgSal = employeeList.stream()
+                .mapToDouble(Employee::getSalary)
+                .average()
+                .orElseThrow(NoSuchElementException::new);
+
+        Double sum = employeeList.stream()
+                .mapToDouble(Employee::getSalary)
+                .sum();
+
+        assertEquals(200000, avgSal);
+        assertEquals(600000, sum);
+    }
+
+    @Test
+    public void whenApplyReduceOnStream_thenGetValue() {
+        List<Employee> employeeList = new ArrayList<>(List.of(arrayOfEmps));
+        Double sumSal = employeeList.stream()
+                .map(Employee::getSalary)
+                .reduce(0.0, (accumulatedValue, element) -> {
+                    System.out.println("accumulatedValue: " + accumulatedValue + " element: " + element);
+                    // accumulatedValue = accumulatedValue + element;  <--- this is the equivalent for statement below.
+                    return accumulatedValue + element;
+                });
+
+        assertEquals(600000, sumSal);
+
+        Double raiseBudget = employeeList.stream()
+                .map(Employee::getSalary)
+                .reduce(0.0, (accumulatedValue, element) -> {
+                    System.out.println("accumulatedValue: " + accumulatedValue + " element: " + element);
+                    // accumulatedValue = accumulatedValue + element;  <--- this is the equivalent for statement below.
+                    return accumulatedValue + element * .05;
+                });
+        assertEquals(30000, raiseBudget);
+    }
+
+    @Test
+    public void whenCollectByJoining_thenGetJoinedString() {
+        List<Employee> employeeList = new ArrayList<>(List.of(arrayOfEmps));
+        List<String> names = new ArrayList<>();
+        for (Employee employee : employeeList) {
+            names.add(employee.getName());
+        }
+        String.join(", ", names);
+
+        String empNames = employeeList.stream()
+                .map(Employee::getName)
+                .collect(Collectors.joining(", "));
+
+        assertEquals("Jeff Bezos, Bill Gates, Mark Zuckerberg", empNames);
+
+
+    }
+
+    @Test
+    public void whenToVectorCollection_thenGetVector() {
+        List<Employee> employeeList = new ArrayList<>(List.of(arrayOfEmps));
+        Vector<String> empNames = employeeList.stream()
+                .map(Employee::getName)
+                .collect(Collectors.toCollection(Vector::new));
+
+        assertEquals(empNames.size(), 3);
+    }
+
+    @Test
+    public void whenApplySummarizing_thenGetBasicStats() {
+        List<Employee> employeeList = new ArrayList<>(List.of(arrayOfEmps));
+        DoubleSummaryStatistics stats = employeeList.stream()
+                .collect(Collectors.summarizingDouble(Employee::getSalary));
+
+        assertEquals(stats.getCount(), 3);
+        assertEquals(stats.getSum(), 600000.0, 0);
+        assertEquals(stats.getMin(), 100000.0, 0);
+        assertEquals(stats.getMax(), 300000.0, 0);
+        assertEquals(stats.getAverage(), 200000.0, 0);
+    }
+
+    @Test
+    public void whenApplySummaryStatistics_thenGetBasicStats() {
+        List<Employee> employeeList = new ArrayList<>(List.of(arrayOfEmps));
+
+        DoubleSummaryStatistics stats = employeeList.stream()
+                .mapToDouble(Employee::getSalary)
+                .summaryStatistics();
+
+        assertEquals(stats.getCount(), 3);
+        assertEquals(stats.getSum(), 600000.0, 0);
+        assertEquals(stats.getMin(), 100000.0, 0);
+        assertEquals(stats.getMax(), 300000.0, 0);
+        assertEquals(stats.getAverage(), 200000.0, 0);
+    }
+
+    @Test
+    public void whenStreamPartition_thenGetMap() {
+        List<Integer> intList = Arrays.asList(2, 4, 5, 6, 8);
+        Map<Boolean, List<Integer>> booleanToElementMap = intList.stream().collect(
+                Collectors.partitioningBy(element -> element % 2 == 0));
+
+        List<Integer> numbers = booleanToElementMap.get(true);
+        System.out.println(numbers);
+        System.out.println(booleanToElementMap.get(false));
+
+        assertEquals(4, booleanToElementMap.get(true).size());
+        assertEquals(1, booleanToElementMap.get(false).size());
+
+        List<Employee> employeeList = new ArrayList<>(List.of(arrayOfEmps));
+
+        Map<Boolean, List<Employee>> employeesGroupedByFirstLetterMap = employeeList
+                .stream()
+                .collect(Collectors.partitioningBy(e -> e.getName().toUpperCase().startsWith("B")));
+        System.out.println(employeesGroupedByFirstLetterMap);
+
+    }
+
+
+    @Test
+    public void whenStreamGroupingBy_thenGetMap() {
+        List<Employee> employeeList = new ArrayList<>(List.of(arrayOfEmps));
+        employeeList.add(new Employee(4L, "Jerry Balderas", 50000.0));
+
+        Map<Character, List<Employee>> firstLetterToEmployeeMap = new HashMap<>();
+
+        for (Employee employee : employeeList) {
+            Character firstCharacter = employee.getName().toUpperCase().charAt(0);
+            List<Employee> savedEmployees = firstLetterToEmployeeMap.getOrDefault(firstCharacter, new ArrayList<>());
+            savedEmployees.add(employee);
+            firstLetterToEmployeeMap.put(firstCharacter, savedEmployees);
+        }
+
+        assertEquals("Bill Gates", firstLetterToEmployeeMap.get('B').get(0).getName());
+        assertEquals("Jeff Bezos", firstLetterToEmployeeMap.get('J').get(0).getName());
+        assertEquals("Jerry Balderas", firstLetterToEmployeeMap.get('J').get(1).getName());
+        assertEquals("Mark Zuckerberg", firstLetterToEmployeeMap.get('M').get(0).getName());
+
+        Map<Character, List<Employee>> groupByAlphabet = employeeList.stream().collect(Collectors.groupingBy(e -> e.getName().charAt(0)));
+
+        assertEquals("Bill Gates", groupByAlphabet.get('B').get(0).getName());
+        assertEquals("Jeff Bezos", groupByAlphabet.get('J').get(0).getName());
+        assertEquals("Jerry Balderas", groupByAlphabet.get('J').get(1).getName());
+        assertEquals("Mark Zuckerberg", groupByAlphabet.get('M').get(0).getName());
+
+    }
+
+    @Test
+    public void whenStreamMapping_thenGetMap() {
+        List<Employee> employeeList = new ArrayList<>(List.of(arrayOfEmps));
+
+        Map<Character, List<Long>> idGroupedByAlphabet = employeeList.stream()
+                .collect(
+                Collectors.groupingBy(e -> e.getName().charAt(0), Collectors.mapping(Employee::getId, Collectors.toList())));
+
+        assertEquals(2, idGroupedByAlphabet.get('B').get(0));
+        assertEquals(1, idGroupedByAlphabet.get('J').get(0));
+        assertEquals(3, idGroupedByAlphabet.get('M').get(0));
+    }
+
+    @Test
+    public void whenParallelStream_thenPerformOperationsInParallel() {
+        Employee[] arrayOfEmps = {
+                new Employee(1L, "Jeff Bezos", 100000.0),
+                new Employee(2L, "Bill Gates", 200000.0),
+                new Employee(3L, "Mark Zuckerberg", 300000.0)
+        };
+
+        List<Employee> employeeList = new ArrayList<>(Arrays.asList(arrayOfEmps));
+        for (long i = 4; i <= 10000000; i++){
+            employeeList.add(new Employee(i, "Employee: " + i, 100000.0 ));
+        }
+
+        System.out.println("Size of list: " +  employeeList.size());
+
+        long startTime = System.nanoTime();
+        List<Employee> empList1 = employeeList.stream().peek(e -> e.salaryIncrement(10.0)).collect(Collectors.toList());
+        long endTime = System.nanoTime();
+
+        double duration = (endTime - startTime) / 1000000.0;
+        System.out.println("Single loop duration: " + duration + " ms");
+
+        startTime = System.nanoTime();
+        List<Employee> empList2 = employeeList.stream().parallel().peek(e -> e.salaryIncrement(10.0)).collect(Collectors.toList());
+        endTime = System.nanoTime();
+        duration = (endTime - startTime) / 1000000.0;
+        System.out.println("Parallel loop duration: " + duration + " ms");
     }
 }
