@@ -1,16 +1,12 @@
 package net.crusader.games.interviewreview.service;
 
-import net.crusader.games.interviewreview.controller.PersonController;
 import net.crusader.games.interviewreview.dto.PersonDto;
 import net.crusader.games.interviewreview.exceptions.ResourceNotFoundException;
 import net.crusader.games.interviewreview.models.Person;
 import net.crusader.games.interviewreview.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
