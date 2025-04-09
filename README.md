@@ -20,7 +20,7 @@ From link: [https://stackify.com/streams-guide-java-8/](https://stackify.com/str
 * reduce()
 * findFirst()
 * toArray()
-* 
+* toList()
 
 ## SQL Queries (JOIN)
 ![SQL JOIN QUERIES](sql-queries.png)
