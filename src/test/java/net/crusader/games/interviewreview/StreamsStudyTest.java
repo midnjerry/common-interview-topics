@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class StreamsStudyTest {
 
     @Test
-    public void dummy() {
+    public void filtersOrdersProperly() {
         Stream<PendingOrder> pendingOrderStream = Stream.of(
                 new PendingOrder(3L),
                 new PendingOrder(25L),
@@ -34,9 +36,9 @@ class StreamsStudyTest {
 
         List<PendingOrder> expected = StreamsStudy.reconcile(pendingOrderStream, processedOrders).toList();
         
-        assertEquals(2, e)
+        assertEquals(2, expected.size());
         
-        System.out.println(expected.toList());
+
     }
 
 }
